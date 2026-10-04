@@ -4,6 +4,14 @@
  * attack timelines, and evidence breakdowns.
  */
 
+// API Base URL Configuration
+// Uses window.CYBERSHIELD_API_BASE or localStorage if set, otherwise defaults to same-origin relative paths (e.g. /api/...)
+const API_BASE_URL = (
+  (typeof window !== 'undefined' && window.CYBERSHIELD_API_BASE) ||
+  (typeof localStorage !== 'undefined' && localStorage.getItem('CYBERSHIELD_API_BASE')) ||
+  ''
+).replace(/\/+$/, '');
+
 // Global State
 let analysisData = {
   summary: null,
@@ -334,7 +342,7 @@ function closeIncidentModal() {
 // Update Status in Backend
 async function updateIncidentStatus(incidentId, newStatus) {
   try {
-    const res = await fetch(`/api/incidents/${incidentId}/status?status=${newStatus}`, { method: 'PATCH' });
+    const res = await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/status?status=${newStatus}`, { method: 'PATCH' });
     if (res.ok) {
       showToast(`Incident ${incidentId} status updated to ${newStatus}`, '✅');
       const inc = analysisData.incidents.find(i => i.incident_id === incidentId);
@@ -354,7 +362,7 @@ async function loadSampleLogs() {
   btn.disabled = true;
 
   try {
-    const res = await fetch('/api/analyze/sample');
+    const res = await fetch(`${API_BASE_URL}/api/analyze/sample`);
     if (!res.ok) throw new Error('Failed to load sample logs');
     const data = await res.json();
     
@@ -383,7 +391,7 @@ async function handleFileUpload(event) {
   showToast(`Uploading and parsing ${file.name}...`, '⏳');
 
   try {
-    const res = await fetch('/api/analyze/upload', {
+    const res = await fetch(`${API_BASE_URL}/api/analyze/upload`, {
       method: 'POST',
       body: formData
     });
