@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberShield — Intrusion Detection & Incident Correlation Platform</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-badge" aria-label="CyberShield Security Icon">
+          <svg class="shield-logo-icon" viewBox="0 0 24 24" width="20" height="20" fill="rgba(56, 189, 248, 0.2)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <div class="sidebar-title-group">
+          <h1>CYBERSHIELD</h1>
+          <div class="sidebar-subtitle">SOC INTRUSION DEFENSE</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-label">Core Operations</div>
+        <a class="nav-item active" id="navDashboard" onclick="switchTab('dashboard')">
+          <span>📊</span>
+          <span>Security Dashboard</span>
+        </a>
+        <a class="nav-item" id="navIncidents" onclick="switchTab('incidents')">
+          <span>🚨</span>
+          <span>Correlated Incidents</span>
+          <span class="nav-counter" id="sidebarIncidentCount">0</span>
+        </a>
+        <a class="nav-item" id="navLogs" onclick="switchTab('logs')">
+          <span>📜</span>
+          <span>Ingested Raw Logs</span>
+        </a>
+
+        <div class="nav-label" style="margin-top: 1rem;">Algothon Problem Statement</div>
+        <div style="padding: 0.5rem 0.75rem; font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
+          <strong style="color: var(--accent-cyan);">ALG-CYBER-01</strong><br>
+          "Find The Intruder"<br>
+          Log Ingestion • Detection Rules • Incident Correlation • Explainable Evidence
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-card">
+          <div class="status-indicator-row">
+            <span style="color: var(--text-muted)">Detection Engine</span>
+            <span style="color: var(--status-safe); font-weight:600;"><span class="pulse-dot"></span> Active</span>
+          </div>
+          <div class="status-indicator-row">
+            <span style="color: var(--text-muted)">Correlation Model</span>
+            <span style="color: var(--accent-cyan); font-weight:600;"><span class="pulse-dot pulse-blue"></span> Transparent</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+      <!-- Top Action Bar -->
+      <header class="top-bar">
+        <div class="page-headline">
+          <h2 id="mainTitle">Security Log Analysis & Intrusion Detection</h2>
+          <p id="mainSubtitle">Explainable attack sequencing, anomaly correlation, and incident forensics</p>
+        </div>
+        <div class="top-actions">
+          <input type="file" id="fileInput" accept=".csv,.json" style="display: none;" onchange="handleFileUpload(event)">
+          <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+            <span>📂</span> Ingest Custom Logs
+          </button>
+          <button class="btn btn-demo" id="btnLoadDemo" onclick="loadSampleLogs()">
+            <span>⚡</span> Load Hackathon Demo Data
+          </button>
+          <span class="scope-badge">ALG-CYBER-01 // PRODUCTION READY</span>
+        </div>
+      </header>
+
+      <!-- Main Body Container -->
+      <div class="content-body">
+        
+        <!-- TOP 4 METRIC CARDS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Total Logs Analyzed</span>
+              <span class="badge badge-low">Ingested</span>
+            </div>
+            <div class="stat-value" id="metricTotalEvents">0</div>
+            <div class="stat-subtext">Normalized security events</div>
+          </div>
+
+          <div class="stat-card risk-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Suspicious Events</span>
+              <span class="badge badge-high">Flagged</span>
+            </div>
+            <div class="stat-value" id="metricSuspiciousEvents">0</div>
+            <div class="stat-subtext">Triggered baseline detection rules</div>
+          </div>
+
+          <div class="stat-card threat-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Correlated Incidents</span>
+              <span class="badge badge-critical">High Severity</span>
+            </div>
+            <div class="stat-value" id="metricActiveIncidents">0</div>
+            <div class="stat-subtext">Unified multi-stage attack clusters</div>
+          </div>
+
+          <div class="stat-card info-card">
+            <div class="stat-card-header">
+              <span class="stat-label">Monitored Entities</span>
+              <span class="badge badge-medium">Entities</span>
+            </div>
+            <div class="stat-value" id="metricUniqueEntities">0 / 0</div>
+            <div class="stat-subtext">Distinct IPs / Target User accounts</div>
+          </div>
+        </div>
+
+        <!-- VIEW: DASHBOARD TAB -->
+        <div id="viewDashboardSection" class="dashboard-grid">
+          <!-- Left Column: Incidents List -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>🚨</span> Correlated Intrusion Incidents
+              </div>
+              <div style="display:flex; gap: 0.5rem;">
+                <select id="filterRisk" onchange="filterIncidents()" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.2rem 0.5rem; font-size:0.75rem;">
+                  <option value="ALL">All Risk Levels</option>
+                  <option value="CRITICAL">Critical Only</option>
+                  <option value="HIGH">High Only</option>
+                  <option value="MEDIUM">Medium Only</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Incident ID</th>
+                    <th>Risk Level</th>
+                    <th>Suspect IP / User</th>
+                    <th>Events</th>
+                    <th>Primary Pattern</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="incidentsTableBody">
+                  <tr>
+                    <td colspan="7">
+                      <div class="empty-state">
+                        <div class="empty-state-icon">🛡️</div>
+                        <p>No log data ingested yet. Click <strong>"Load Hackathon Demo Data"</strong> or upload your own CSV log file above.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right Column: Suspicious IPs and Users Ranking -->
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <!-- Suspicious IPs -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><span>🌐</span> Top Suspicious IPs</div>
+              </div>
+              <div class="card-body">
+                <div class="entity-list" id="suspiciousIpsList">
+                  <div class="empty-state" style="padding:1.5rem 0;">No suspicious IPs identified</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Suspicious Accounts -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title"><span>👤</span> Compromised Accounts</div>
+              </div>
+              <div class="card-body">
+                <div class="entity-list" id="suspiciousUsersList">
+                  <div class="empty-state" style="padding:1.5rem 0;">No targeted accounts flagged</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: RAW LOGS TAB (Hidden by default) -->
+        <div id="viewLogsSection" class="card" style="display:none;">
+          <div class="card-header">
+            <div class="card-title"><span>📜</span> Ingested Security Event Stream</div>
+            <span id="rawLogsCountBadge" class="badge badge-low">0 rows</span>
+          </div>
+          <div class="card-body table-container" style="max-height: 520px; overflow-y: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Source IP</th>
+                  <th>User</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Target Resource</th>
+                  <th>Agent / Tool</th>
+                </tr>
+              </thead>
+              <tbody id="rawLogsTableBody">
+                <tr><td colspan="7" style="text-align:center;">No logs loaded.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- FORENSIC INVESTIGATION MODAL (Incident Detail) -->
+  <div class="modal-overlay" id="incidentModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle"><span>🔍</span> Incident Deep Forensics: INC-0001</h3>
+        <button class="close-btn" onclick="closeIncidentModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Content will be dynamically inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toastNotification">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastMessage">Notification message</span>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

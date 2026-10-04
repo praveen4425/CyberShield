@@ -1,0 +1,65 @@
+{
+  "total_events": 76,
+  "suspicious_events": 16,
+  "normal_events": 60,
+  "suspicious_percentage": 21.1,
+  "expected_incidents_count": 3,
+  "scenarios": [
+    {
+      "scenario_id": "SCENARIO-01-NORMAL-BASELINE",
+      "description": "Legitimate enterprise workday activities across multiple accounts (alice, bob, carol, david, emma, frank, grace, henry) from standard internal IPs.",
+      "expected_flag": false,
+      "entities": [
+        "alice",
+        "bob",
+        "carol",
+        "david",
+        "emma",
+        "frank",
+        "grace",
+        "henry"
+      ]
+    },
+    {
+      "scenario_id": "SCENARIO-02-BRUTE-FORCE-FAILED",
+      "description": "Repeated failed login attempts against account 'admin_backup' from suspicious external IP 45.33.32.156 with no breakthrough.",
+      "expected_flag": true,
+      "expected_rule": "RULE-AUTH-BRUTEFORCE-01",
+      "risk_level": "HIGH",
+      "intruder_ip": "45.33.32.156",
+      "target_user": "admin_backup",
+      "event_count": 5
+    },
+    {
+      "scenario_id": "SCENARIO-03-CREDENTIAL-COMPROMISE",
+      "description": "Multiple failed logins against account 'sysadmin' followed immediately by successful authentication and subsequent resource navigation from IP 198.51.100.89.",
+      "expected_flag": true,
+      "expected_rule": "RULE-AUTH-COMPROMISE-02",
+      "risk_level": "CRITICAL",
+      "intruder_ip": "198.51.100.89",
+      "target_user": "sysadmin",
+      "event_count": 7
+    },
+    {
+      "scenario_id": "SCENARIO-04-PASSWORD-SPRAYING",
+      "description": "Horizontal password spray across multiple distinct employee usernames (finance_lead, dev_ops, hr_manager, qa_lead) originating from single external IP 203.0.113.42.",
+      "expected_flag": true,
+      "expected_rule": "RULE-AUTH-SPRAY-03",
+      "risk_level": "CRITICAL",
+      "intruder_ip": "203.0.113.42",
+      "targeted_users": [
+        "finance_lead",
+        "dev_ops",
+        "hr_manager",
+        "qa_lead"
+      ],
+      "event_count": 4
+    },
+    {
+      "scenario_id": "SCENARIO-05-EDGE-CASES",
+      "description": "Robustness testing: duplicate event, out-of-order timestamp, missing optional fields (user-agent, resource).",
+      "expected_flag": false,
+      "note": "Parser and normalizer must gracefully ingest and chronologically order these without crashing."
+    }
+  ]
+}

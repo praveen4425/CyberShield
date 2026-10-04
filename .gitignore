@@ -1,0 +1,10 @@
+# CyberShield .gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
